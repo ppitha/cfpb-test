@@ -1,0 +1,42 @@
+
+All candidates answer these:
+
+1. What’s the structure of the dataset? 
+
+   There are 3 tables: customers, loans, and transactions. The customers table contains a record for each unique customer's personal identifying data (e.g. name, address, email, phone number, birth date), along with some demographic data (e.g. income, gender, hair color, credit). The loans table contains records specifying loans for these customers; attributes include loan origination date, principal amount, due date, etc.  The transactions table contains transactions that appear to be payments made on the loans. Attributes include the amount of the payment, the payment date, whether it was late, and the fee associated with the payment.
+
+What are the foreign keys?
+
+   loans.customer_id_string is a foreign key for customers.id_string
+   transactions.loan_id_string is a foreign key for loans.id_string
+
+Are there uniqueness issues that might cause problems in analysis? 
+
+   Yes. The loans table's primary key, id_string, is missing on 50 records. The transaction table's primary key, id_string, is missing on 50 records. This means that for these tables, there is not in fact a primary key.
+
+   Also on the 50 transactions records missing id_string, the foreign key
+   (transactions.loan_id_string) is also missing.
+
+   transactions.loan_id_string is  also missing on 211 other records where a transaction_id is not null.
+
+
+How would you ideally structure this and optimize it for analysis?
+
+   I would read the raw data into the 3 tables, without primary keys (as shown in ddl_statements.sql). I think I would create new loan and transaction tables with new keys, filling in new unique values, and for transactions, create a new foreign key to the new loans table, using the new loan ID, and matching transactions to loans as completely as possible. Such a mapping/matching is shown in no_id_queries.sql. Unfortunately, this does not map all transactions to loans, so it's possible there is more work to be done.
+
+
+2. Please provide examples of code that you would use to perform data quality checks on the data. 
+   See data_quality_checks.sql.
+
+What data quality issues do you see in the data?
+   Loans - 50 records missing id_string
+   Transactions - 50 records missing id_string and loan_id_string,
+      211 records missing transaction_loan_id_string but having non-null id_string
+
+   The missing primary and foreign keys create uncertainty in reliably matching transactions to loans.
+
+
+3. What assumptions do you have to make to resolve these data quality issues?
+   I assumed that the total paid on a loan matched the total payments from transactions.
+   I also assumed that payments would fall strictly after the origination date of the loan, and possibly later than the loan's due date, but not by much.
+
